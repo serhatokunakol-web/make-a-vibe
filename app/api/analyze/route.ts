@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const { image, gender, occasion, weather, personalLibrary, mode } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY; 
     
-    if (!apiKey) return NextResponse.json({ error: "API Key is missing in settings." }, { status: 500 });
+    if (!apiKey) return NextResponse.json({ error: "API Key is missing in Vercel settings." }, { status: 500 });
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -20,11 +20,9 @@ export async function POST(req: Request) {
 
     const resText = result.response.text();
     const jsonMatch = resText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI output invalid.");
-
-    return NextResponse.json(JSON.parse(jsonMatch[0]));
+    return NextResponse.json(JSON.parse(jsonMatch![0]));
   } catch (error: any) {
-    // 429 Kota aşımı veya 403 erişim hatalarını yakalar
+    // 429 hatasını Vercel loglarında görmeni sağlar
     console.error("ANALYSIS_ERROR:", error.message);
     return NextResponse.json({ error: error.message }, { status: error.status || 500 });
   }
