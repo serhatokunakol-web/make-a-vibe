@@ -6,13 +6,13 @@ export async function POST(req: Request) {
     const { image, gender, occasion, weather, personalLibrary, mode } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY; 
     
-    if (!apiKey) return NextResponse.json({ error: "API Key is missing." }, { status: 500 });
+    if (!apiKey) return NextResponse.json({ error: "API Key missing." }, { status: 500 });
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const base64Data = image.includes(",") ? image.split(",")[1] : image;
-    const prompt = `Analyze this ${gender}'s outfit for Starboy/Old Money style. Return ONLY JSON: {"auraScore":0, "styleAnalysis":"...", "recommendations":[{"perfumeName":"...", "logic":"..."}]}`;
+    const prompt = `Analyze this outfit for Starboy style. Context: ${occasion}, ${weather}. Return ONLY JSON: {"auraScore":0, "styleAnalysis":"...", "recommendations":[{"perfumeName":"...", "logic":"..."}]}`;
 
     const result = await model.generateContent([
       prompt, { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
@@ -20,8 +20,10 @@ export async function POST(req: Request) {
 
     const resText = result.response.text();
     const jsonMatch = resText.match(/\{[\s\S]*\}/);
-    return NextResponse.json(JSON.parse(jsonMatch![0]));
+    return NextResponse.json(JSON.parse(jsonMatch[0]));
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // 429 Kota aşımı veya diğer hataları terminalde görmeni sağlar
+    console.error("ANALYSIS_ERROR:", error.message);
+    return NextResponse.json({ error: error.message }, { status: error.status || 500 });
   }
 }
