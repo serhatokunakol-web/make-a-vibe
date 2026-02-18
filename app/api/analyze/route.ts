@@ -5,37 +5,40 @@ export async function POST(req: Request) {
   try {
     const { image, gender, occasion, weather, personalLibrary, mode } = await req.json();
     
-    // ÖNEMLİ: Vercel Settings -> Environment Variables kısmına GEMINI_API_KEY eklediğinden emin ol!
+    // Vercel Settings -> Environment Variables kısmına GEMINI_API_KEY eklediğinden emin ol!
     const apiKey = process.env.GEMINI_API_KEY; 
     
     if (!apiKey) {
-      return NextResponse.json({ error: "API Key is missing in Vercel settings." }, { status: 500 });
+      return NextResponse.json({ error: "API Key is missing in server settings." }, { status: 500 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+    // Base64 verisindeki header kısmını temizler
     const base64Data = image.includes(",") ? image.split(",")[1] : image;
 
     const modeInstruction = mode === "personal" 
-      ? `CRITICAL: Suggest 3 perfumes ONLY from this list: [${personalLibrary.join(", ")}].`
-      : `GLOBAL: Access Fragrantica database for 2025/2026 rankings.`;
+      ? `CRITICAL VALIDATION: Suggest 3 perfumes ONLY from this list: [${personalLibrary.join(", ")}].`
+      : `GLOBAL ACCESS: Suggest the best 3 matching perfumes in the world using 2025/2026 data.`;
 
     const prompt = `Analyze this ${gender}'s outfit for ${gender === 'Male' ? 'Starboy/Old Money' : 'Clean Girl/Quiet Luxury'} aesthetics.
-    Occasion: ${occasion}, Weather: ${weather}. ${modeInstruction}
+    Context: Occasion: ${occasion}, Weather: ${weather}. ${modeInstruction}
 
     Return ONLY JSON:
     {
       "auraScore": 0,
-      "styleAnalysis": "...",
+      "styleAnalysis": "Brief architectural breakdown",
       "recommendations": [
         { 
-          "type": "...", "perfumeName": "Brand - Name", "score": "4.XX", "rank": "...",
+          "type": "The Crowd-Pleaser", "perfumeName": "Brand - Name", "score": "4.XX", "rank": "#X in 2025/26",
           "metrics": { "longevity": "X/10", "sillage": "X/10", "genderProfile": "...", "bestSeason": "..." },
-          "notes": "...", "logic": "..." 
-        }
+          "notes": "Top, Mid, Base", "logic": "Why it matches" 
+        },
+        { "type": "The Signature", "perfumeName": "...", "score": "...", "rank": "...", "metrics": {"longevity": "...", "sillage": "...", "genderProfile": "...", "bestSeason": "..."}, "notes": "...", "logic": "..." },
+        { "type": "The Hidden Gem", "perfumeName": "...", "score": "...", "rank": "...", "metrics": {"longevity": "...", "sillage": "...", "genderProfile": "...", "bestSeason": "..."}, "notes": "...", "logic": "..." }
       ],
-      "advice": "..."
+      "advice": "1 sentence style tip"
     }`;
 
     const result = await model.generateContent([
@@ -44,14 +47,13 @@ export async function POST(req: Request) {
     ]);
 
     const responseText = result.response.text();
-    // Regex ile JSON kısmını her türlü (markdown dahil) ayıklıyoruz
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     
-    if (!jsonMatch) throw new Error("Invalid AI Response Format");
+    if (!jsonMatch) throw new Error("AI did not return a valid JSON.");
 
     return NextResponse.json(JSON.parse(jsonMatch[0]));
   } catch (error: any) {
-    console.error("DEBUG_ERROR:", error.message);
+    console.error("BUILD_ERROR:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

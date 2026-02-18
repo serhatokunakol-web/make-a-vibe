@@ -9,6 +9,7 @@ export default function MakeAVibe() {
   const [occasion, setOccasion] = useState("Date Night 🍷");
   const [weather, setWeather] = useState("Cold/Winter ❄️");
   
+  // Varsayılan Kütüphanen
   const [library, setLibrary] = useState<string[]>(["Initio Side Effect", "JPG Le Male Elixir", "Dior Sauvage Elixir", "Cedrat Boise"]);
   const [newPerfume, setNewPerfume] = useState("");
   const [searchMode, setSearchMode] = useState("global");
@@ -40,11 +41,7 @@ export default function MakeAVibe() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setResult(data);
-    } catch (e: any) { 
-      alert("Validation Error: " + e.message);
-    } finally { 
-      setLoading(false); 
-    }
+    } catch (e: any) { alert("Error: " + e.message); } finally { setLoading(false); }
   };
 
   return (
@@ -52,13 +49,12 @@ export default function MakeAVibe() {
       <div className="max-w-md mx-auto space-y-6 pb-20">
         <header className="text-center">
           <h1 className="text-6xl font-black italic tracking-tighter text-white uppercase">MAKE A VIBE</h1>
-          <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest mt-2">Scent Validation Engine</p>
+          <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest mt-2 uppercase">Scent Validation Engine</p>
         </header>
 
-        {/* MOD & KÜTÜPHANE */}
-        <div className="flex bg-zinc-900 rounded-2xl p-1 border border-zinc-800">
-          <button onClick={() => setSearchMode("global")} className={`flex-1 py-2.5 text-[10px] font-black rounded-xl transition ${searchMode === "global" ? "bg-white text-black" : "text-zinc-500"}`}>GLOBAL</button>
-          <button onClick={() => setSearchMode("personal")} className={`flex-1 py-2.5 text-[10px] font-black rounded-xl transition ${searchMode === "personal" ? "bg-white text-black" : "text-zinc-500"}`}>MY LIBRARY</button>
+        <div className="flex bg-zinc-900 rounded-2xl p-1 border border-zinc-800 shadow-lg shadow-white/5">
+          <button onClick={() => setSearchMode("global")} className={`flex-1 py-2.5 text-[10px] font-black rounded-xl transition ${searchMode === "global" ? "bg-white text-black scale-95" : "text-zinc-500"}`}>GLOBAL</button>
+          <button onClick={() => setSearchMode("personal")} className={`flex-1 py-2.5 text-[10px] font-black rounded-xl transition ${searchMode === "personal" ? "bg-white text-black scale-95" : "text-zinc-500"}`}>MY LIBRARY</button>
         </div>
 
         <div className="bg-zinc-900/50 p-5 rounded-[2.5rem] border border-zinc-800 space-y-4">
@@ -75,23 +71,21 @@ export default function MakeAVibe() {
           </div>
         </div>
 
-        {/* SEÇİCİLER */}
         <div className="grid grid-cols-2 gap-2">
-          <select value={occasion} onChange={(e) => setOccasion(e.target.value)} className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-[10px] uppercase font-black outline-none">
+          <select value={occasion} onChange={(e) => setOccasion(e.target.value)} className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-[10px] uppercase font-black outline-none transition">
             {["Date Night 🍷", "Office/Work 💼", "Match Day ⚽", "Party/Clubbing 🕺", "Beach/Summer ☀️"].map(o => <option key={o} value={o}>{o}</option>)}
           </select>
-          <select value={weather} onChange={(e) => setWeather(e.target.value)} className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-[10px] uppercase font-black outline-none">
+          <select value={weather} onChange={(e) => setWeather(e.target.value)} className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-[10px] uppercase font-black outline-none transition">
             {["Cold/Winter ❄️", "Mediterranean Hot ☀️", "Rainy/Autumn 🌧️", "Mild/Spring 🌸"].map(w => <option key={w} value={w}>{w}</option>)}
           </select>
         </div>
 
         <div className="flex bg-zinc-900 rounded-full p-1 border border-zinc-800">
           {["Male", "Female"].map((g) => (
-            <button key={g} onClick={() => setGender(g)} className={`flex-1 py-2 text-[10px] font-black rounded-full transition ${gender === g ? "bg-white text-black" : "text-zinc-500"}`}>{g.toUpperCase()}</button>
+            <button key={g} onClick={() => setGender(g)} className={`flex-1 py-2 text-[10px] font-black rounded-full transition ${gender === g ? "bg-white text-black scale-95" : "text-zinc-500"}`}>{g.toUpperCase()}</button>
           ))}
         </div>
 
-        {/* FOTOĞRAF YÜKLEME */}
         <div className="group relative border-2 border-dashed border-zinc-800 rounded-[2.5rem] p-12 text-center hover:border-zinc-500 transition-all overflow-hidden shadow-2xl">
           {image && <img src={image} className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-700" />}
           <input type="file" onChange={handleImage} className="hidden" id="upload" />
@@ -107,7 +101,6 @@ export default function MakeAVibe() {
           </button>
         )}
 
-        {/* SONUÇLAR */}
         {result && (
           <div className="mt-4 space-y-8 animate-in fade-in slide-in-from-bottom duration-1000">
             <div className="flex justify-between items-center border-b border-zinc-900 pb-8">
